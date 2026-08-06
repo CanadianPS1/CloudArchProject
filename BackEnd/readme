@@ -1,0 +1,24 @@
+# AWS SAM Cloud Architecture Project
+
+This folder contains a minimal AWS Serverless Application Model (SAM) project for a simple Lambda API.
+
+## Structure
+- template.yaml: SAM infrastructure definition
+- src/main.py: Lambda handler
+- samconfig.toml: deployment settings
+- events/get-event.json: sample event for local testing
+
+## Commands
+1. Build the project:
+   sam build
+
+2. Run locally with a sample event:
+   sam local invoke HelloWorldFunction --event events/get-event.json
+
+3. Deploy to AWS:
+   sam deploy --guided
+
+## Next steps
+- Add DynamoDB or S3 resources
+- Connect the Lambda to API Gateway or EventBridge
+- Add IAM permissions and environment variables for production

@@ -1,0 +1,31 @@
+{
+  "resource": "/hello",
+  "path": "/hello",
+  "httpMethod": "GET",
+  "headers": {},
+  "multiValueHeaders": {},
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "resourceId": "123456",
+    "resourcePath": "/hello",
+    "httpMethod": "GET",
+    "requestId": "test-request",
+    "accountId": "123456789012",
+    "stage": "Prod",
+    "domainName": "localhost",
+    "domainPrefix": "localhost",
+    "extendedRequestId": "test",
+    "path": "/hello",
+    "protocol": "HTTP/1.1",
+    "identity": {
+      "sourceIp": "127.0.0.1"
+    },
+    "deploymentId": "test",
+    "apiId": "test"
+  },
+  "body": null,
+  "isBase64Encoded": false
+}
