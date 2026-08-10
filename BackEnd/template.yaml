@@ -26,6 +26,42 @@ Resources:
     Properties:
       DBClusterIdentifier: !Ref NeptuneCluster
       DBInstanceClass: db.r6g.large
+  AuroraSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: aurora-master-secret
+      GenerateSecretString:
+        SecretStringTemplate: '{"username":"dbadmin"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  AuroraDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Aurora DB subnet group
+      SubnetIds:
+        - subnet-xxxxxxxx
+        - subnet-yyyyyyyy
+  AuroraCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      EngineVersion: "16.4"
+      DatabaseName: appdb
+      MasterUsername: !Sub "{{resolve:secretsmanager:${AuroraSecret}:SecretString:username}}"
+      MasterUserPassword: !Sub "{{resolve:secretsmanager:${AuroraSecret}:SecretString:password}}"
+      DBSubnetGroupName: !Ref AuroraDBSubnetGroup
+      ServerlessV2ScalingConfiguration:
+        MinCapacity: 0.5
+        MaxCapacity: 2
+      StorageEncrypted: true
+  AuroraInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBClusterIdentifier: !Ref AuroraCluster
+      DBInstanceClass: db.serverless
+      Engine: aurora-postgresql
+      PubliclyAccessible: false
   # ── SQS Queue ────────────────────────────────────────────────────────
   NotificationQueue:
     Type: AWS::SQS::Queue
@@ -37,7 +73,7 @@ Resources:
     Properties:
       FunctionName: SendMessage
       CodeUri: src/Messages/SendMessage/
-      Handler: app.lambda_handler
+      Handler: CreateMessages.lambda_handler
       Policies:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt NotificationQueue.QueueName
@@ -53,66 +89,190 @@ Resources:
             Path: /api/messages
             Method: POST
     GetMessages:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: GetMessages
-      CodeUri: src/Messages/GetMessages/
-      Handler: app.lambda_handler
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt NotificationQueue.QueueName
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaVPCAccessExecutionRole
-      Environment:
-        Variables:
-          QUEUE_URL: !Ref NotificationQueue
-      Events:
-        GetMessages:
-          Type: Api
-          Properties:
-            Path: /api/messages
-            Method: GET
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: GetMessages
+        CodeUri: src/Messages/
+        Handler: GetAllMessages.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - AWSLambdaBasicExecutionRole
+          - AWSLambdaVPCAccessExecutionRole
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          GetMessages:
+            Type: Api
+            Properties:
+              Path: /api/messages
+              Method: GET
     UpdateMessages:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: UpdateMessages
-      CodeUri: src/Messages/UpdateMessages/
-      Handler: app.lambda_handler
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt NotificationQueue.QueueName
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaVPCAccessExecutionRole
-      Environment:
-        Variables:
-          QUEUE_URL: !Ref NotificationQueue
-      Events:
-        UpdateMessages:
-          Type: Api
-          Properties:
-            Path: /api/messages
-            Method: UPDATE
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: UpdateMessages
+        CodeUri: src/Messages/
+        Handler: UpdateMessages.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - AWSLambdaBasicExecutionRole
+          - AWSLambdaVPCAccessExecutionRole
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          UpdateMessages:
+            Type: Api
+            Properties:
+              Path: /api/messages
+              Method: UPDATE
     DeleteMessages:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: DeleteMessages
-      CodeUri: src/Messages/DeleteMessages/
-      Handler: app.lambda_handler
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt NotificationQueue.QueueName
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaVPCAccessExecutionRole
-      Environment:
-        Variables:
-          QUEUE_URL: !Ref NotificationQueue
-      Events:
-        DeleteMessages:
-          Type: Api
-          Properties:
-            Path: /api/messages
-            Method: DELETE
-
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: DeleteMessages
+        CodeUri: src/Messages/
+        Handler: DeleteMessages.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - AWSLambdaBasicExecutionRole
+          - AWSLambdaVPCAccessExecutionRole
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          DeleteMessages:
+            Type: Api
+            Properties:
+              Path: /api/messages
+              Method: DELETE
+    GetAllUsers:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: GetAllUsers
+        CodeUri: src/Users/
+        Handler: GetAllUsers.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-db:connect
+                Resource:
+                  - arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:cluster-ABCDEFGHIJKLMN/users
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          GetAllUsers:
+            Type: Api
+            Properties:
+              Path: /api/users
+              Method: GET
+    GetOneUsers:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: GetOneUsers
+        CodeUri: src/Users/
+        Handler: GetOneUsers.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-db:connect
+                Resource:
+                  - arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:cluster-ABCDEFGHIJKLMN/users
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          GetOneUsers:
+            Type: Api
+            Properties:
+              Path: /api/users
+              Method: GET
+    SignUpUsers:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: SignUpUsers
+        CodeUri: src/Users/
+        Handler: SignUpUsers.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-db:connect
+                Resource:
+                  - arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:cluster-ABCDEFGHIJKLMN/users
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          SignUpUsers:
+            Type: Api
+            Properties:
+              Path: /api/users
+              Method: POST
+    UpdateUsers:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: UpdateUsers
+        CodeUri: src/Users/
+        Handler: UpdateUsers.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-db:connect
+                Resource:
+                  - arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:cluster-ABCDEFGHIJKLMN/users
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          UpdateUsers:
+            Type: Api
+            Properties:
+              Path: /api/users
+              Method: UPDATE
+    DeleteUsers:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: DeleteUsers
+        CodeUri: src/Users/
+        Handler: DeleteUsers.lambda_handler
+        Policies:
+          - SQSSendMessagePolicy:
+              QueueName: !GetAtt NotificationQueue.QueueName
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-db:connect
+                Resource:
+                  - arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:cluster-ABCDEFGHIJKLMN/users
+        Environment:
+          Variables:
+            QUEUE_URL: !Ref NotificationQueue
+        Events:
+          DeleteUsers:
+            Type: Api
+            Properties:
+              Path: /api/users
+              Method: DELETE
   NotifyDirectorFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -133,7 +293,7 @@ Outputs:
     Value: !Ref NotificationQueue
   NotificationQueueArn:
     Value: !GetAtt NotificationQueue.Arn
-  ProducerFunctionName:
-    Value: !Ref SignUpForAuditionFunction
+  # ProducerFunctionName:
+  #   Value: !Ref SignUpForAuditionFunction
   ConsumerFunctionName:
     Value: !Ref NotifyDirectorFunction
