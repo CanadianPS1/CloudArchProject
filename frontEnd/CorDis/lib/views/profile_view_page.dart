@@ -11,7 +11,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("")),
+      appBar: AppBar(title: Text("UserName")),
       body: SafeArea(child: Placeholder()),
     );
   }
