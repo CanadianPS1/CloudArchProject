@@ -43,8 +43,29 @@ def lambda_handler(event, context):
 
         # Prepare the SQL statement to insert a new user
         sql = f"""
-            INSERT INTO users (user_id, username, email, password, created_at)
-            VALUES ('{user_id}', '{username}', '{email}', '{password}', '{created_at}')
+            IF EXISTS (
+                SELECT 1
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_SCHEMA = 'dbo'
+                AND TABLE_NAME = 'YourTableName'
+            )
+            BEGIN
+                INSERT INTO users (user_id, username, email, password, created_at)
+                VALUES ('{user_id}', '{username}', '{email}', '{password}', '{created_at}')
+            END 
+            ELSE
+            BEGIN
+                CREATE TABLE users (
+                    user_id VARCHAR(36) PRIMARY KEY,
+                    username VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    created_at DATETIME NOT NULL
+                );
+
+                INSERT INTO users (user_id, username, email, password, created_at)
+                VALUES ('{user_id}', '{username}', '{email}', '{password}', '{created_at}');
+            END
         """
 
         # Execute the SQL statement using RDS Data Service
