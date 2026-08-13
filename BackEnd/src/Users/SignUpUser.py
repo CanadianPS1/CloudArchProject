@@ -26,11 +26,17 @@ def _decimal_to_float(obj):
 
 def lambda_handler(event, context):
     try:
+        statusOptions = {
+            "active": "active",
+            "inactive": "inactive",
+            "pending": "pending"
+        }
         # Extract user data from the event body
         body = json.loads(event.get("body", "{}"))
         username = body.get("username")
         email = body.get("email")
         password = body.get("password")
+
 
         if not username or not email or not password:
             return response(400, {"error": "Missing required fields"})
@@ -50,8 +56,8 @@ def lambda_handler(event, context):
                 AND TABLE_NAME = 'YourTableName'
             )
             BEGIN
-                INSERT INTO users (user_id, username, email, password, created_at)
-                VALUES ('{user_id}', '{username}', '{email}', '{password}', '{created_at}')
+                INSERT INTO users (user_id, username, email, encryptedPass, encryptionKey, created_at, status)
+                VALUES ('{user_id}', '{username}', '{email}', 'SET UP AUTH FOR PASSWORD THINGS', 'default_key', '{created_at}', '{statusOptions["active"]}');
             END 
             ELSE
             BEGIN
@@ -59,7 +65,10 @@ def lambda_handler(event, context):
                     user_id VARCHAR(36) PRIMARY KEY,
                     username VARCHAR(255) NOT NULL,
                     email VARCHAR(255) NOT NULL,
-                    password VARCHAR(255) NOT NULL,
+                    encryptedPass VARCHAR(255) NOT NULL,
+                    encryptionKey VARCHAR(255) NOT NULL,
+                    bio VARCHAR(500),
+                    status VARCHAR(50) NOT NULL,
                     created_at DATETIME NOT NULL
                 );
 
