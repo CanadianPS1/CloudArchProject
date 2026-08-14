@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                 SELECT 1
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_SCHEMA = 'dbo'
-                AND TABLE_NAME = 'YourTableName'
+                AND TABLE_NAME = 'users'
             )
             BEGIN
                 INSERT INTO users (user_id, username, email, encryptedPass, encryptionKey, created_at, status)
@@ -72,8 +72,8 @@ def lambda_handler(event, context):
                     created_at DATETIME NOT NULL
                 );
 
-                INSERT INTO users (user_id, username, email, password, created_at)
-                VALUES ('{user_id}', '{username}', '{email}', '{password}', '{created_at}');
+                INSERT INTO users (user_id, username, email, encryptedPass, encryptionKey, created_at, status)
+                VALUES ('{user_id}', '{username}', '{email}', 'SET UP AUTH FOR PASSWORD THINGS', 'default_key', '{created_at}', '{statusOptions["active"]}');
             END
         """
 
