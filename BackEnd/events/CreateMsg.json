@@ -1,0 +1,16 @@
+{
+    "httpMethod": "POST",
+    "path": "/api/messages",
+    "headers": {},
+    "queryStringParameters": null,
+    "body": {
+        "userID" : "",
+        "message" : "",
+        "channelID" : ""
+    },
+    "pathParameters": null,
+    "requestContext": {
+    "resourcePath": "/api/messages",
+    "httpMethod": "POST"
+    }
+}

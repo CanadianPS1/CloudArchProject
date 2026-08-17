@@ -1,0 +1,16 @@
+{
+    "httpMethod": "POST",
+    "path": "/api/users",
+    "headers": {},
+    "queryStringParameters": null,
+    "body": {
+        "userName" : "",
+        "password" : "",
+        "email" : ""
+    },
+    "pathParameters": null,
+    "requestContext": {
+    "resourcePath": "/api/users",
+    "httpMethod": "POST"
+    }
+}

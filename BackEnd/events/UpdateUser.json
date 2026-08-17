@@ -1,0 +1,17 @@
+{
+    "httpMethod": "PATCH",
+    "path": "/api/users/{userID}",
+    "headers": {},
+    "queryStringParameters": null,
+    "body": {
+        "userName" : "",
+        "password" : "",
+        "email" : "",
+        "bio" : ""
+    },
+    "pathParameters": null,
+    "requestContext": {
+    "resourcePath": "/api/users/{userID}",
+    "httpMethod": "PATCH"
+    }
+}

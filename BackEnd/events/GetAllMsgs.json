@@ -1,0 +1,12 @@
+{
+    "httpMethod": "GET",
+    "path": "/api/messages",
+    "headers": {},
+    "queryStringParameters": null,
+    "body": null,
+    "pathParameters": null,
+    "requestContext": {
+    "resourcePath": "/api/messages",
+    "httpMethod": "GET"
+    }
+}
