@@ -22,3 +22,25 @@ This folder contains a minimal AWS Serverless Application Model (SAM) project fo
 - Add DynamoDB or S3 resources
 - Connect the Lambda to API Gateway or EventBridge
 - Add IAM permissions and environment variables for production
+
+
+
+## Data format notes
+Data:
+PostgreSQL:
+- User account data
+- User friends (bridge table between Users and users)
+
+Dynamo:
+- channels
+{
+   "channelID" : String
+   "channelName" : String
+   [
+      "messageID" : String
+      "userID" : String
+      "userName" : String
+      "message" : String
+      "timeStamp" : String
+   ]
+}
