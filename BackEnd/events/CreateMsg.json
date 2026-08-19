@@ -1,0 +1,9 @@
+{
+    "httpMethod": "POST",
+    "path": "/create_msg",
+    "headers": {
+        "content-type": "application/json"
+    },
+    "queryStringParameters": null,
+    "body": "{\"channelID\": \"12\", \"channelName\": \"testChannel\", \"massages\": [\"messageID\": \"5287584\", \"userID\": \"453384834\", \"userName\": \"testUser\", \"message\": \"Hi this is a test message\", \"timeStamp\": \"10:12\"]}"
+}
