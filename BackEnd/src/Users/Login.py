@@ -4,7 +4,13 @@ import os
 import psycopg2
 from datetime import datetime,timezone
 from uuid import uuid4
-def response(code,body):
+import boto3
+import base64
+import cryptography
+from decimal import Decimal
+from os import getenv
+from BackEnd.src import AuthTool
+def response(code, body):
     return {
         "statusCode":code,
         "headers":{
@@ -13,7 +19,25 @@ def response(code,body):
         },
         "body":json.dumps(body)
     }
-def lambda_handler(event,context):
+def _decimal_to_float(obj):
+    """JSON serializer helper — DynamoDB returns Decimal for numbers."""
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+def decrypt_password(encrypted_password, encryption_key):
+    try:
+        encrypted_bytes = encrypted_password.encode('utf-8') if isinstance(encrypted_password, str) else encrypted_password
+        key_bytes = encryption_key.encode('utf-8') if isinstance(encryption_key, str) else encryption_key
+        if not key_bytes:
+            raise ValueError("Encryption key cannot be empty")
+
+        decrypted = AuthTool.XorCipher(encrypted_bytes, key_bytes)
+        return decrypted.decode('utf-8')
+    except Exception as e:
+        logging.error(f"Error decrypting password: {str(e)}")
+        return encrypted_password
+
+def lambda_handler(event, context):
     try:
         "/api/users/username/{username}/password/{password}"
         path_parameters = event.get("pathParameters",{})
@@ -35,11 +59,14 @@ def lambda_handler(event,context):
         )
         search_results = cursor.fetchall()
         if not search_results:
-            cursor.close()
-            connection.close()
-            return response(404,{"error":"User not found"})
-        encryptionKey = search_results[0][4]
-        encryptedPass = search_results[0][3]
+            return response(404, {"error": "User not found"})
+
+        encyptionKey = search_results[0][4]['stringValue']
+        ecryptedPass = search_results[0][3]['stringValue']
+        decrypted_password = decrypt_password(ecryptedPass, encyptionKey)
+
+        if decrypted_password != password:
+            return response(404, {"error": "Incorrect password"})
         # Here you would implement your password verification logic
         cursor.close()
         connection.close()
