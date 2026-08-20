@@ -7,6 +7,15 @@ architecture = "x86_64"
 handler = "GetAllUsers.lambda_handler"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["GetAllUsers", "SignUpUsers", "UpdateUsers", "DeleteUsers", "Login"]
+functions = ["GetAllUsers", "UpdateUsers", "DeleteUsers"]
+
+[function_build_definitions.e8f2cd04-0fb0-48d1-9332-7cfa4266becb]
+codeuri = "/home/gunch/Documents/GitHub/CloudArchProject/BackEnd/src"
+runtime = "python3.14"
+architecture = "x86_64"
+handler = "Users.SignUpUser.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["SignUpUsers", "Login"]
 
 [layer_build_definitions]

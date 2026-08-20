@@ -73,7 +73,7 @@ Resources:
     Properties:
       FunctionName: SignUpUsers
       CodeUri: SignUpUsers
-      Handler: SignUpUser.lambda_handler
+      Handler: Users.SignUpUser.lambda_handler
       VpcConfig:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup
@@ -181,7 +181,7 @@ Resources:
     Properties:
       FunctionName: Login
       CodeUri: Login
-      Handler: Login.lambda_handler
+      Handler: Users.Login.lambda_handler
       VpcConfig:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup

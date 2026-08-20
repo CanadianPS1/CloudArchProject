@@ -94,8 +94,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: SignUpUsers
-      CodeUri: src/Users/
-      Handler: SignUpUser.lambda_handler
+      CodeUri: src/
+      Handler: Users.SignUpUser.lambda_handler
       VpcConfig:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
@@ -178,8 +178,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: Login
-      CodeUri: src/Users/
-      Handler: Login.lambda_handler
+      CodeUri: src/
+      Handler: Users.Login.lambda_handler
       VpcConfig:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
@@ -209,7 +209,7 @@ Resources:
   #   Type: AWS::Serverless::Function
   #   Properties:
   #     FunctionName: SendMessage
-  #     CodeUri: src/Messages/SendMessage.py
+  #     CodeUri: src/Messages/
   #     Handler: CreateMessages.lambda_handler
   #     Policies:
   #       - AWSLambdaBasicExecutionRole
@@ -226,7 +226,7 @@ Resources:
   #     Type: AWS::Serverless::Function
   #     Properties:
   #       FunctionName: GetMessages
-  #       CodeUri: src/Messages/GetMessages.py
+  #       CodeUri: src/Messages/
   #       Handler: GetAllMessages.lambda_handler
   #       Policies:
   #         - AWSLambdaBasicExecutionRole
@@ -243,7 +243,7 @@ Resources:
   #     Type: AWS::Serverless::Function
   #     Properties:
   #       FunctionName: UpdateMessages
-  #       CodeUri: src/Messages/UpdateMessages.py
+  #       CodeUri: src/Messages/
   #       Handler: UpdateMessages.lambda_handler
   #       Policies:
   #         - AWSLambdaBasicExecutionRole
@@ -260,7 +260,7 @@ Resources:
   #     Type: AWS::Serverless::Function
   #     Properties:
   #       FunctionName: DeleteMessages
-  #       CodeUri: src/Messages/DeleteMessages.py
+  #       CodeUri: src/Messages/
   #       Handler: DeleteMessages.lambda_handler
   #       Policies:
   #         - AWSLambdaBasicExecutionRole
