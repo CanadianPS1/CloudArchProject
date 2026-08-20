@@ -1,0 +1,3 @@
+/BackEnd/.aws-sam/**
+
+/BackEnd/src/Users/GetAllUsers.py
