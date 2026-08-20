@@ -1,0 +1,5 @@
+{
+  "httpMethod":"POST",
+  "path":"/api/users/create",
+  "body":"{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"password123\"}"
+}

@@ -8,6 +8,11 @@ Globals:
   Api:
     EndpointConfiguration: REGIONAL
 Resources:
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda functions
+      VpcId: vpc-0097d5ecedf0fc0c5
   MyPostgresDB:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -27,3 +32,213 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: notifications
+  GetAllUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAllUsers
+      CodeUri: GetAllUsers
+      Handler: GetAllUsers.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        GetAllUsers:
+          Type: Api
+          Properties:
+            Path: /api/users
+            Method: GET
+    Metadata:
+      SamResourceId: GetAllUsers
+  SignUpUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SignUpUsers
+      CodeUri: SignUpUsers
+      Handler: SignUpUser.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        SignUpUsers:
+          Type: Api
+          Properties:
+            Path: /api/users/create
+            Method: POST
+    Metadata:
+      SamResourceId: SignUpUsers
+  UpdateUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateUsers
+      CodeUri: UpdateUsers
+      Handler: UpdateUser.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        UpdateUsers:
+          Type: Api
+          Properties:
+            Path: /api/users
+            Method: UPDATE
+    Metadata:
+      SamResourceId: UpdateUsers
+  DeleteUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteUsers
+      CodeUri: DeleteUsers
+      Handler: DeleteUser.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        DeleteUsers:
+          Type: Api
+          Properties:
+            Path: /api/users/{user_id}
+            Method: DELETE
+    Metadata:
+      SamResourceId: DeleteUsers
+  Login:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: Login
+      CodeUri: Login
+      Handler: Login.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /api/users
+            Method: POST
+    Metadata:
+      SamResourceId: Login
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
+  DatabaseEndpoint:
+    Description: PostgreSQL database endpoint
+    Value:
+      Fn::GetAtt:
+      - MyPostgresDB
+      - Endpoint.Address
+  DatabasePort:
+    Description: PostgreSQL database port
+    Value:
+      Fn::GetAtt:
+      - MyPostgresDB
+      - Endpoint.Port
+  DatabaseName:
+    Description: PostgreSQL database name
+    Value: my_database
+  NotificationQueueUrl:
+    Description: SQS notification queue URL
+    Value:
+      Ref: NotificationQueue
+  NotificationQueueArn:
+    Description: SQS notification queue ARN
+    Value:
+      Fn::GetAtt:
+      - NotificationQueue
+      - Arn
