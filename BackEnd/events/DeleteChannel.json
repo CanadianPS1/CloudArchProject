@@ -1,0 +1,7 @@
+{
+	"httpMethod":"DELETE",
+	"path":"/api/channel/bf763f7f-a97e-4d4d-9478-bada9bc88ec2",
+	"pathParameters":{
+		"channel_id":"bf763f7f-a97e-4d4d-9478-bada9bc88ec2"
+	}
+}
