@@ -29,23 +29,45 @@ def password_encryption(password, encryption_key):
     # You can implement your own encryption method here
     try:
         password_bytes = password.encode('utf-8')
+        password_base64 = base64.b64encode(password_bytes)
+        print("test print" + password_base64)
+        print("Password test" + password)
+
         key_bytes = encryption_key.encode('utf-8')
-        encrypted_password = AuthTool.XorCipher(password_bytes, key_bytes)
+        key_base64 = base64.b64encode(key_bytes)
+        encrypted_password = AuthTool.XorCipher(password_base64, key_base64)
         pass
     except Exception as e:
         logging.error(f"Error encrypting password: {str(e)}")
-    return encrypted_password  # Replace with actual encryption logic
+    return encrypted_password
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body","{}"))
+        print("test print")
+        
+        # String to encode
+        my_string = "Hello from PythonGuides!"
+
+        # Convert string to bytes
+        string_bytes = my_string.encode('utf-8')
+
+        # Encode bytes to base64
+        base64_bytes = base64.b64encode(string_bytes)
+
+        # Convert base64 bytes to string for display
+        base64_string = base64_bytes.decode('utf-8')
+
+        #print(f"Original string: {my_string}")
+        #print(f"Base64 encoded: {base64_string}")
         username = body.get("username")
         email = body.get("email")
         password = body.get("password")
         encryption_key = AuthTool.KeyGenerator(32)  # Generate a random encryption key
-        encrypted_password = password_encryption(password, encryption_key)  # Encrypt the password using the generated key
-
+        encrypted_password = password_encryption(str(password), encryption_key)  # Encrypt the password using the generated key
+        print("Encryption Key: " + encryption_key)
         if not username or not email or not password:
             return response(400,{"error":"Missing required fields"})
+        
         user_id = str(uuid4())
         created_at = datetime.now(timezone.utc)
         connection = psycopg2.connect(
@@ -55,6 +77,7 @@ def lambda_handler(event, context):
             user = os.environ["DB_USER"],
             password = os.environ["DB_PASSWORD"]
         )
+
         cursor = connection.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users(
@@ -65,7 +88,7 @@ def lambda_handler(event, context):
                 encryptionKey VARCHAR(255) NOT NULL,
                 bio VARCHAR(500),
                 status VARCHAR(50) NOT NULL,
-                created_at TIMESTAMPTZ NOT NULL
+                created_at TIMESTAMP NOT NULL
             )
         """)
         cursor.execute("""
@@ -91,6 +114,7 @@ def lambda_handler(event, context):
         connection.commit()
         cursor.close()
         connection.close()
+        
         return response(201,{
             "message" : "User created successfully",
             "user_id" : user_id

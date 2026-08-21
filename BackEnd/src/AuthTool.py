@@ -4,7 +4,7 @@ from xxlimited import new
 import cryptography
 import json
 
-from numpy import var
+#from numpy import var
 
 def lamda_handler(event, context):
     try:
