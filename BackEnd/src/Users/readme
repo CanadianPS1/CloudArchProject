@@ -1,7 +1,7 @@
 tests for users
-aws lambda invoke --function-name SignUpUsers --payload fileb://events/SignUpUser.json response.json && cat response.json && \
-            aws lambda invoke --function-name Login --payload fileb://events/Login.json response.json && cat response.json && \
-            aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
-            aws lambda invoke --function-name UpdateUsers --payload fileb://events/UpdateUser.json response.json && cat response.json && \
-            aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
-            aws lambda invoke --function-name DeleteUsers --payload fileb://events/DeleteUser.json response.json && cat response.json
+    aws lambda invoke --function-name SignUpUsers --payload fileb://events/SignUpUser.json response.json && cat response.json && \
+    aws lambda invoke --function-name Login --payload fileb://events/Login.json response.json && cat response.json && \
+    aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
+    aws lambda invoke --function-name UpdateUsers --payload fileb://events/UpdateUser.json response.json && cat response.json && \
+    aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
+    aws lambda invoke --function-name DeleteUsers --payload fileb://events/DeleteUser.json response.json && cat response.json

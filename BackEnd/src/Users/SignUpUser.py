@@ -83,8 +83,8 @@ def lambda_handler(event, context):
             user_id,
             username,
             email,
-            "SET UP AUTH FOR PASSWORD THINGS",
-            "default_key",
+            encrypted_password,
+            encryption_key,
             created_at,
             "active"
         ))
