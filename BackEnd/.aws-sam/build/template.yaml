@@ -25,6 +25,7 @@ Resources:
   ChannelsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
+      TableName: Channels
       PrimaryKey:
         Name: Id
         Type: String
@@ -212,6 +213,142 @@ Resources:
             Method: POST
     Metadata:
       SamResourceId: Login
+  CreateChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CreateChannel
+      CodeUri: CreateChannel
+      Handler: CreateChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel
+            Method: POST
+    Metadata:
+      SamResourceId: CreateChannel
+  GetAllChannels:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAllChannels
+      CodeUri: GetAllChannels
+      Handler: GetAllChannels.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel
+            Method: GET
+    Metadata:
+      SamResourceId: GetAllChannels
+  GetChannelById:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetChannelById
+      CodeUri: GetChannelById
+      Handler: GetChannelById.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: GET
+    Metadata:
+      SamResourceId: GetChannelById
+  GetChannelsByUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetChannelsByUser
+      CodeUri: GetChannelsByUser
+      Handler: GetChannelsByUser.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/{userId}
+            Method: GET
+    Metadata:
+      SamResourceId: GetChannelsByUser
+  UpdateChannelName:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateChannelName
+      CodeUri: UpdateChannelName
+      Handler: UpdateChannelName.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: UPDATE
+    Metadata:
+      SamResourceId: UpdateChannelName
+  RemoveUserFromChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RemoveUserFromChannel
+      CodeUri: RemoveUserFromChannel
+      Handler: RemoveUserFromChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/remove/{user_id}
+            Method: UPDATE
+    Metadata:
+      SamResourceId: RemoveUserFromChannel
+  AddUserToChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: AddUserToChannel
+      CodeUri: AddUserToChannel
+      Handler: AddUserToChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/add/{user_id}
+            Method: UPDATE
+    Metadata:
+      SamResourceId: AddUserToChannel
+  DeleteChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteChannel
+      CodeUri: DeleteChannel
+      Handler: DeleteChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: DELETE
+    Metadata:
+      SamResourceId: DeleteChannel
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint

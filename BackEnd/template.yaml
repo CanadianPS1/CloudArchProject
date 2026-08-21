@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
+Description: ''
 Globals:
   Function:
     Runtime: python3.14
@@ -23,11 +23,12 @@ Resources:
       DBName: my_database
       MasterUsername: db_user
       MasterUserPassword: my_secure_password
-  
+
   # DynamoDB
   ChannelsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
+      TableName: Channels
       PrimaryKey:
         Name: Id
         Type: String
@@ -41,27 +42,27 @@ Resources:
 
   #USER LAMBDA
 
-# GetOneUsers:
-#   Type: AWS::Serverless::Function
-#   Properties:
-#     FunctionName: GetOneUsers
-#     CodeUri: src/Users/
-#     Handler: GetOneUsers.lambda_handler
-#     Policies:
-#       - AWSLambdaBasicExecutionRole
-#     Environment:
-#       Variables:
-#         DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
-#         DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
-#         DB_NAME: my_database
-#         DB_USER: db_user
-#         DB_PASSWORD: my_secure_password
-#     Events:
-#       GetOneUsers:
-#         Type: Api
-#         Properties:
-#           Path: /api/users/{user_id}
-#           Method: GET
+  # GetOneUsers:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: GetOneUsers
+  #     CodeUri: src/Users/
+  #     Handler: GetOneUsers.lambda_handler
+  #     Policies:
+  #       - AWSLambdaBasicExecutionRole
+  #     Environment:
+  #       Variables:
+  #         DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
+  #         DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
+  #         DB_NAME: my_database
+  #         DB_USER: db_user
+  #         DB_PASSWORD: my_secure_password
+  #     Events:
+  #       GetOneUsers:
+  #         Type: Api
+  #         Properties:
+  #           Path: /api/users/{user_id}
+  #           Method: GET
   GetAllUsers:
     Type: AWS::Serverless::Function
     Properties:
@@ -202,9 +203,128 @@ Resources:
           Properties:
             Path: /api/users
             Method: POST
-            
-    #MESSAGE LAMBDA
-    
+  #MESSAGE LAMBDA
+
+  CreateChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CreateChannel
+      CodeUri: src/Messages/
+      Handler: CreateChannel.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel
+            Method: POST
+  GetAllChannels:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAllChannels
+      CodeUri: src/Messages/
+      Handler: GetAllChannels.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel
+            Method: GET
+  GetChannelById:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetChannelById
+      CodeUri: src/Messages/
+      Handler: GetChannelById.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: GET
+  GetChannelsByUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetChannelsByUser
+      CodeUri: src/Messages/
+      Handler: GetChannelsByUser.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/{userId}
+            Method: GET
+  UpdateChannelName:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateChannelName
+      CodeUri: src/Messages/
+      Handler: UpdateChannelName.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: UPDATE
+  RemoveUserFromChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RemoveUserFromChannel
+      CodeUri: src/Messages/
+      Handler: RemoveUserFromChannel.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/remove/{user_id}
+            Method: UPDATE
+  AddUserToChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: AddUserToChannel
+      CodeUri: src/Messages/
+      Handler: AddUserToChannel.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/add/{user_id}
+            Method: UPDATE
+  DeleteChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteChannel
+      CodeUri: src/Messages/
+      Handler: DeleteChannel.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: DELETE
   # SendMessage:
   #   Type: AWS::Serverless::Function
   #   Properties:
@@ -288,7 +408,7 @@ Resources:
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
   DatabaseEndpoint:
     Description: PostgreSQL database endpoint
     Value: !GetAtt MyPostgresDB.Endpoint.Address

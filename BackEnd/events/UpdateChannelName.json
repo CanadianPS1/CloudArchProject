@@ -1,0 +1,8 @@
+{
+	"httpMethod":"UPDATE",
+	"path":"/api/channel/5a1eee7b-0510-4a84-b008-9ca8505029a2",
+	"pathParameters":{
+		"channel_id":"5a1eee7b-0510-4a84-b008-9ca8505029a2"
+	},
+	"body":"{\"name\":\"UpdatedName\"}"
+}
