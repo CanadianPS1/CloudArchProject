@@ -30,7 +30,7 @@ def password_encryption(password, encryption_key):
     try:
         password_bytes = password.encode('utf-8')
         password_base64 = base64.b64encode(password_bytes)
-        print("test print" + password_base64)
+        print(f"test print {password_base64}")
         print("Password test" + password)
 
         key_bytes = encryption_key.encode('utf-8')
@@ -106,8 +106,8 @@ def lambda_handler(event, context):
             user_id,
             username,
             email,
-            "SET UP AUTH FOR PASSWORD THINGS",
-            "default_key",
+            encrypted_password,
+            encryption_key,
             created_at,
             "active"
         ))
