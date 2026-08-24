@@ -97,7 +97,7 @@ Resources:
       FunctionName: SignUpUsers
       CodeUri: src/
       Handler: Users.SignUpUser.lambda_handler
-      Timeout: 20
+      Timeout: 30
       VpcConfig:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
@@ -110,7 +110,7 @@ Resources:
       Environment:
         Variables:
           DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
-          DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
+          DB_PORT: 5432
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: my_secure_password

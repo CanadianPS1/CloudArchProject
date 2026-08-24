@@ -91,10 +91,7 @@ Resources:
             Fn::GetAtt:
             - MyPostgresDB
             - Endpoint.Address
-          DB_PORT:
-            Fn::GetAtt:
-            - MyPostgresDB
-            - Endpoint.Port
+          DB_PORT: 5432
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: my_secure_password
