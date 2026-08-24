@@ -1,2 +1,7 @@
-.aws-sam/
+.aws-sam/build.toml
+
+.aws-sam/**
+
+.aws-sam/build/
+
 samconfig.toml
