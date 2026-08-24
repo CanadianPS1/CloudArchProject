@@ -75,6 +75,7 @@ Resources:
       FunctionName: SignUpUsers
       CodeUri: SignUpUsers
       Handler: Users.SignUpUser.lambda_handler
+      Timeout: 20
       VpcConfig:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup

@@ -26,8 +26,8 @@ def _decimal_to_float(obj):
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 def decrypt_password(encrypted_password, encryption_key):
     try:
-        encrypted_bytes = encrypted_password.encode('utf-8') if isinstance(encrypted_password, str) else encrypted_password
-        key_bytes = encryption_key.encode('utf-8') if isinstance(encryption_key, str) else encryption_key
+        encrypted_bytes = encrypted_password.decode('utf-8')
+        key_bytes = encryption_key.decode('utf-8')
         if not key_bytes:
             raise ValueError("Encryption key cannot be empty")
 

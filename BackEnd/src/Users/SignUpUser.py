@@ -10,6 +10,7 @@ import cryptography
 from decimal import Decimal
 from os import getenv
 import AuthTool
+
 def response(code, body):
     return {
         "statusCode" : code,
@@ -19,18 +20,20 @@ def response(code, body):
         },
         "body" : json.dumps(body)
     }
+
 def _decimal_to_float(obj):
     """JSON serializer helper — DynamoDB returns Decimal for numbers."""
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
 def password_encryption(password, encryption_key):
     # Placeholder for password encryption logic
     # You can implement your own encryption method here
     try:
         password_bytes = password.encode('utf-8')
         password_base64 = base64.b64encode(password_bytes)
-        print(f"test print {password_base64}")
+        print(f"test print: {password_base64}")
         print("Password test" + password)
 
         key_bytes = encryption_key.encode('utf-8')
@@ -40,6 +43,7 @@ def password_encryption(password, encryption_key):
     except Exception as e:
         logging.error(f"Error encrypting password: {str(e)}")
     return encrypted_password
+
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body","{}"))
@@ -64,11 +68,11 @@ def lambda_handler(event, context):
         password = body.get("password")
         encryption_key = AuthTool.KeyGenerator(32)  # Generate a random encryption key
         encrypted_password = password_encryption(str(password), encryption_key)  # Encrypt the password using the generated key
-        print("Encryption Key: " + encryption_key)
         if not username or not email or not password:
             return response(400,{"error":"Missing required fields"})
         
         user_id = str(uuid4())
+        
         created_at = datetime.now(timezone.utc)
         connection = psycopg2.connect(
             host = os.environ["DB_HOST"],
@@ -77,6 +81,8 @@ def lambda_handler(event, context):
             user = os.environ["DB_USER"],
             password = os.environ["DB_PASSWORD"]
         )
+
+        print("Encryption Key: " + encryption_key)
 
         cursor = connection.cursor()
         cursor.execute("""
