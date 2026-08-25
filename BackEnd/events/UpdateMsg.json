@@ -1,0 +1,14 @@
+{
+    "httpMethod": "PUT",
+    "path": "/api/messages/{messageID}",
+    "headers": {},
+    "queryStringParameters": null,
+    "body": {
+        "message" : ""
+    },
+    "pathParameters": null,
+    "requestContext": {
+    "resourcePath": "/api/messages/{messageID}",
+    "httpMethod": "PUT"
+    }
+}
