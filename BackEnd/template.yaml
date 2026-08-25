@@ -91,10 +91,10 @@ Resources:
           Properties:
             Path: /api/users
             Method: GET
-  SignUpUsers:
+  SignUpUser:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: SignUpUsers
+      FunctionName: SignUpUser
       CodeUri: src/
       Handler: Users.SignUpUser.lambda_handler
       Timeout: 20
@@ -115,15 +115,15 @@ Resources:
           DB_USER: db_user
           DB_PASSWORD: my_secure_password
       Events:
-        SignUpUsers:
+        SignUpUser:
           Type: Api
           Properties:
             Path: /api/users/create
             Method: POST
-  UpdateUsers:
+  UpdateUser:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: UpdateUsers
+      FunctionName: UpdateUser
       CodeUri: src/Users/
       Handler: UpdateUser.lambda_handler
       VpcConfig:
@@ -143,15 +143,15 @@ Resources:
           DB_USER: db_user
           DB_PASSWORD: my_secure_password
       Events:
-        UpdateUsers:
+        UpdateUser:
           Type: Api
           Properties:
             Path: /api/users
             Method: PUT
-  DeleteUsers:
+  DeleteUser:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: DeleteUsers
+      FunctionName: DeleteUser
       CodeUri: src/Users/
       Handler: DeleteUser.lambda_handler
       VpcConfig:
@@ -171,7 +171,7 @@ Resources:
           DB_USER: db_user
           DB_PASSWORD: my_secure_password
       Events:
-        DeleteUsers:
+        DeleteUser:
           Type: Api
           Properties:
             Path: /api/users/{user_id}
