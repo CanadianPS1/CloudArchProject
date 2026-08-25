@@ -13,7 +13,7 @@ This folder contains a minimal AWS Serverless Application Model (SAM) project fo
    sam build
 
 2. Run locally with a sample event:
-   sam local invoke HelloWorldFunction --event events/get-event.json
+   local invoke HelloWorldFunction --event events/get-event.json
 
 3. Deploy to AWS:
    sam deploy --guided

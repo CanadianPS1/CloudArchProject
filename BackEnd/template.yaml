@@ -13,7 +13,37 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Lambda functions
-      VpcId: vpc-0097d5ecedf0fc0c5
+      VpcId: vpc-07490d29cedde3872
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Postgres RDS
+      VpcId: vpc-07490d29cedde3872
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+
+  MyDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets for Postgres
+      SubnetIds:
+        - subnet-024b20c484292353b
+        - subnet-09aa82884bd18c7bb
+        - subnet-0470a748e5174906c
+
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        SecretStringTemplate: '{"username":"db_user"}'
+        GenerateStringKey: password
+        PasswordLength: 32
+        ExcludeCharacters: '"@/\\'
+
   MyPostgresDB:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -22,7 +52,10 @@ Resources:
       AllocatedStorage: '20'
       DBName: my_database
       MasterUsername: db_user
-      MasterUserPassword: my_secure_password
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
 
   # DynamoDB
   ChannelsTable:
@@ -73,9 +106,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -91,10 +124,10 @@ Resources:
           Properties:
             Path: /api/users
             Method: GET
-  SignUpUsers:
+  SignUpUser:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: SignUpUsers
+      FunctionName: SignUpUser
       CodeUri: src/
       Handler: Users.SignUpUser.lambda_handler
       Timeout: 30
@@ -102,9 +135,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -115,7 +148,7 @@ Resources:
           DB_USER: db_user
           DB_PASSWORD: my_secure_password
       Events:
-        SignUpUsers:
+        SignUpUser:
           Type: Api
           Properties:
             Path: /api/users/create
@@ -130,9 +163,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -147,7 +180,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/users
-            Method: UPDATE
+            Method: PUT
   DeleteUsers:
     Type: AWS::Serverless::Function
     Properties:
@@ -158,9 +191,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -186,9 +219,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -280,7 +313,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/channel/{channel_id}
-            Method: UPDATE
+            Method: PUT
   RemoveUserFromChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -295,7 +328,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/channel/user/remove/{user_id}
-            Method: UPDATE
+            Method: PUT
   AddUserToChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -310,7 +343,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/channel/user/add/{user_id}
-            Method: UPDATE
+            Method: PUT
   DeleteChannel:
     Type: AWS::Serverless::Function
     Properties:

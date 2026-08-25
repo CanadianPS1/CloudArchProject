@@ -16,7 +16,7 @@ architecture = "x86_64"
 handler = "Users.SignUpUser.lambda_handler"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["SignUpUsers", "Login"]
+functions = ["SignUpUser", "Login"]
 
 [function_build_definitions.802bc283-b32b-4d4a-96ad-ba2a9dc7be84]
 codeuri = "C:\\NeumontClasswork\\Quarter_8\\PRO305\\CloudArchProject\\BackEnd\\src\\Messages"
