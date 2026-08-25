@@ -147,7 +147,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/users
-            Method: UPDATE
+            Method: PUT
   DeleteUsers:
     Type: AWS::Serverless::Function
     Properties:
@@ -280,7 +280,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/channel/{channel_id}
-            Method: UPDATE
+            Method: PUT
   RemoveUserFromChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -295,7 +295,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/channel/user/remove/{user_id}
-            Method: UPDATE
+            Method: PUT
   AddUserToChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -310,7 +310,7 @@ Resources:
           Type: Api
           Properties:
             Path: /api/channel/user/add/{user_id}
-            Method: UPDATE
+            Method: PUT
   DeleteChannel:
     Type: AWS::Serverless::Function
     Properties:

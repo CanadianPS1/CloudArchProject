@@ -3,5 +3,5 @@ aws lambda invoke --function-name SignUpUser --payload fileb://events/SignUpUser
 aws lambda invoke --function-name Login --payload fileb://events/Login.json response.json && cat response.json && \
 aws lambda invoke --function-name GetAllUser --payload fileb://events/GetAllUser.json response.json && cat response.json && \
 aws lambda invoke --function-name UpdateUser --payload fileb://events/UpdateUser.json response.json && cat response.json && \
-aws lambda invoke --function-name GetAllUser --payload fileb://events/GetAllUser.json response.json && cat response.json && \
+aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
 aws lambda invoke --function-name DeleteUser --payload fileb://events/DeleteUser.json response.json && cat response.json
