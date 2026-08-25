@@ -78,7 +78,7 @@ def lambda_handler(event, context):
         connection = psycopg2.connect(
             host = os.environ["DB_HOST"],
             #The error is originating from the port
-            port = int(os.environ.get("5432")),
+            port = os.environ.get("DB_PORT","5432"),
             database = os.environ.get("DB_NAME","my_database"),
             user = os.environ["DB_USER"],
             password = os.environ["DB_PASSWORD"]
