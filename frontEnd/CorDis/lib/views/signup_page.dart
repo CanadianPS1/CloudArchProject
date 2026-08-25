@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:cordis/models/user_profile.dart';
+
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -13,13 +15,103 @@ class _SignupPageState extends State<SignupPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _handleSignup() {
+  Future<void> _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       // Execute registration logic or API call here
-      
-      // Navigate to home and clear navigation stack
+
+      userProfileNotifier.value = userProfileNotifier.value.copyWith(
+        displayName: _nameController.text.trim(),
+        handle: _buildHandle(),
+      );
+
+      _showTopSuccessMessage('User created successfully!');
+      await Future<void>.delayed(const Duration(seconds: 1));
+
+      if (!mounted) {
+        return;
+      }
+
       Navigator.pushReplacementNamed(context, '/home');
     }
+  }
+
+  String _buildHandle() {
+    final emailName = _emailController.text.trim().split('@').first;
+    final rawHandle = emailName.isNotEmpty ? emailName : _nameController.text;
+    final cleanHandle = rawHandle
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9_]+'), '')
+        .trim();
+
+    if (cleanHandle.isEmpty) {
+      return '@username';
+    }
+
+    return '@$cleanHandle';
+  }
+
+  void _showTopSuccessMessage(String message) {
+    final overlayEntry = OverlayEntry(
+      builder: (context) {
+        return Positioned(
+          top: MediaQuery.of(context).padding.top + 12,
+          left: 16,
+          right: 16,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: -1, end: 0),
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, value * 80),
+                child: child,
+              );
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade600,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        message,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+    Future<void>.delayed(
+      const Duration(milliseconds: 1200),
+      overlayEntry.remove,
+    );
   }
 
   @override

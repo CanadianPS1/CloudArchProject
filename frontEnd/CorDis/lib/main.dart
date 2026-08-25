@@ -11,6 +11,8 @@ void main() {
   runApp(const MyApp());
 }
 
+const _wineAccent = Color(0xFF7A1F2D);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -21,9 +23,7 @@ class MyApp extends StatelessWidget {
       title: 'CorDis',
 
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: _wineAccent),
         useMaterial3: true,
       ),
 
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
 
-        // treating friends as the main/home page 
+        // treating friends as the main/home page
         '/home': (context) => const FriendsPage(),
         '/friends': (context) => const FriendsPage(),
 
