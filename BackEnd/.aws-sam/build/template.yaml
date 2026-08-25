@@ -1,0 +1,382 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: ''
+Globals:
+  Function:
+    Runtime: python3.14
+    Timeout: 10
+  Api:
+    EndpointConfiguration: REGIONAL
+Resources:
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda functions
+      VpcId: vpc-0097d5ecedf0fc0c5
+  MyPostgresDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: '20'
+      DBName: my_database
+      MasterUsername: db_user
+      MasterUserPassword: my_secure_password
+  ChannelsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Channels
+      PrimaryKey:
+        Name: Id
+        Type: String
+  NotificationQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: notifications
+  GetAllUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAllUsers
+      CodeUri: GetAllUsers
+      Handler: GetAllUsers.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        GetAllUsers:
+          Type: Api
+          Properties:
+            Path: /api/users
+            Method: GET
+    Metadata:
+      SamResourceId: GetAllUsers
+  SignUpUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SignUpUsers
+      CodeUri: SignUpUsers
+      Handler: Users.SignUpUser.lambda_handler
+      Timeout: 20
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        SignUpUsers:
+          Type: Api
+          Properties:
+            Path: /api/users/create
+            Method: POST
+    Metadata:
+      SamResourceId: SignUpUsers
+  UpdateUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateUsers
+      CodeUri: UpdateUsers
+      Handler: UpdateUser.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        UpdateUsers:
+          Type: Api
+          Properties:
+            Path: /api/users
+            Method: UPDATE
+    Metadata:
+      SamResourceId: UpdateUsers
+  DeleteUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteUsers
+      CodeUri: DeleteUsers
+      Handler: DeleteUser.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        DeleteUsers:
+          Type: Api
+          Properties:
+            Path: /api/users/{user_id}
+            Method: DELETE
+    Metadata:
+      SamResourceId: DeleteUsers
+  Login:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: Login
+      CodeUri: Login
+      Handler: Users.Login.lambda_handler
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: LambdaSecurityGroup
+        SubnetIds:
+        - subnet-000bbe0ea15d9fbcb
+        - subnet-0ff2a9217a5a24230
+        - subnet-013ab40ccdb082226
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          DB_HOST:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Address
+          DB_PORT:
+            Fn::GetAtt:
+            - MyPostgresDB
+            - Endpoint.Port
+          DB_NAME: my_database
+          DB_USER: db_user
+          DB_PASSWORD: my_secure_password
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /api/users
+            Method: POST
+    Metadata:
+      SamResourceId: Login
+  CreateChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CreateChannel
+      CodeUri: CreateChannel
+      Handler: CreateChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel
+            Method: POST
+    Metadata:
+      SamResourceId: CreateChannel
+  GetAllChannels:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAllChannels
+      CodeUri: GetAllChannels
+      Handler: GetAllChannels.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel
+            Method: GET
+    Metadata:
+      SamResourceId: GetAllChannels
+  GetChannelById:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetChannelById
+      CodeUri: GetChannelById
+      Handler: GetChannelById.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: GET
+    Metadata:
+      SamResourceId: GetChannelById
+  GetChannelsByUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetChannelsByUser
+      CodeUri: GetChannelsByUser
+      Handler: GetChannelsByUser.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/{userId}
+            Method: GET
+    Metadata:
+      SamResourceId: GetChannelsByUser
+  UpdateChannelName:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateChannelName
+      CodeUri: UpdateChannelName
+      Handler: UpdateChannelName.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: UPDATE
+    Metadata:
+      SamResourceId: UpdateChannelName
+  RemoveUserFromChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RemoveUserFromChannel
+      CodeUri: RemoveUserFromChannel
+      Handler: RemoveUserFromChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/remove/{user_id}
+            Method: UPDATE
+    Metadata:
+      SamResourceId: RemoveUserFromChannel
+  AddUserToChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: AddUserToChannel
+      CodeUri: AddUserToChannel
+      Handler: AddUserToChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/user/add/{user_id}
+            Method: UPDATE
+    Metadata:
+      SamResourceId: AddUserToChannel
+  DeleteChannel:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteChannel
+      CodeUri: DeleteChannel
+      Handler: DeleteChannel.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Channels
+      Events:
+        CreateChannel:
+          Type: Api
+          Properties:
+            Path: /api/channel/{channel_id}
+            Method: DELETE
+    Metadata:
+      SamResourceId: DeleteChannel
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
+  DatabaseEndpoint:
+    Description: PostgreSQL database endpoint
+    Value:
+      Fn::GetAtt:
+      - MyPostgresDB
+      - Endpoint.Address
+  DatabasePort:
+    Description: PostgreSQL database port
+    Value:
+      Fn::GetAtt:
+      - MyPostgresDB
+      - Endpoint.Port
+  DatabaseName:
+    Description: PostgreSQL database name
+    Value: my_database
+  NotificationQueueUrl:
+    Description: SQS notification queue URL
+    Value:
+      Ref: NotificationQueue
+  NotificationQueueArn:
+    Description: SQS notification queue ARN
+    Value:
+      Fn::GetAtt:
+      - NotificationQueue
+      - Arn

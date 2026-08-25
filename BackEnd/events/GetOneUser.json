@@ -1,12 +1,8 @@
 {
-    "httpMethod": "GET",
-    "path": "/api/users/{userID}",
-    "headers": {},
-    "queryStringParameters": null,
-    "body": null,
-    "pathParameters": null,
-    "requestContext": {
-    "resourcePath": "/api/users/{userID}",
-    "httpMethod": "GET"
-    }
+  "httpMethod":"GET",
+  "path":"/api/users/12345678-1234-1234-1234-123456789abc",
+  "pathParameters":{
+    "user_id":"12345678-1234-1234-1234-123456789abc"
+  },
+  "body":""
 }

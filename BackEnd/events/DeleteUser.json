@@ -1,12 +1,8 @@
 {
-    "httpMethod": "DELETE",
-    "path": "/api/users/{UserID}",
-    "headers": {},
-    "queryStringParameters": null,
-    "body": null,
-    "pathParameters": null,
-    "requestContext": {
-    "resourcePath": "/api/users/{UserID}",
-    "httpMethod": "DELETE"
-    }
+  "httpMethod":"DELETE",
+  "path":"/api/users/12345678-1234-1234-1234-123456789abc",
+  "pathParameters":{
+    "user_id":"12345678-1234-1234-1234-123456789abc"
+  },
+  "body":""
 }

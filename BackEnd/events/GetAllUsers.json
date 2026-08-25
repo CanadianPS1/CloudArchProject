@@ -1,12 +1,5 @@
 {
-    "httpMethod": "GET",
-    "path": "/api/users",
-    "headers": {},
-    "queryStringParameters": null,
-    "body": null,
-    "pathParameters": null,
-    "requestContext": {
-    "resourcePath": "/api/users",
-    "httpMethod": "GET"
-    }
+  "httpMethod":"GET",
+  "path":"/api/users",
+  "body":""
 }

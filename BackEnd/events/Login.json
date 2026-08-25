@@ -1,15 +1,6 @@
 {
-    "httpMethod": "POST",
-    "path": "/api/users/login",
-    "headers": {},
-    "queryStringParameters": null,
-    "body": {
-        "userName" : "",
-        "password" : ""
-    },
-    "pathParameters": null,
-    "requestContext": {
-    "resourcePath": "/api/users/login",
-    "httpMethod": "POST"
-    }
+  "httpMethod":"POST",
+  "path":"/api/users",
+  "pathParameters":{},
+  "body":"{\"username\":\"testuser\",\"password\":\"password123\"}"
 }
