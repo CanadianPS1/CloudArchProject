@@ -47,8 +47,7 @@ def password_encryption(password, encryption_key):
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body","{}"))
-        print("test print")
-        
+
         # String to encode
         my_string = "Hello from PythonGuides!"
 
@@ -70,10 +69,17 @@ def lambda_handler(event, context):
         encrypted_password = password_encryption(str(password), encryption_key)  # Encrypt the password using the generated key
         if not username or not email or not password:
             return response(400,{"error":"Missing required fields"})
+
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE username  =  %s",
+            (username,)
+        )
+        search_results = cursor.fetchall()
+        if search_results:
+            return response(404, {"error": "Username is already in use please pick another."})
         
         user_id = str(uuid4())
-        print(" it think the error is in the user id")
-
         created_at = datetime.now(timezone.utc)
         connection = psycopg2.connect(
             host = os.environ["DB_HOST"],
@@ -83,8 +89,6 @@ def lambda_handler(event, context):
             user = os.environ["DB_USER"],
             password = os.environ["DB_PASSWORD"]
         )
-
-        print("Encryption Key: " + encryption_key)
 
         cursor = connection.cursor()
         cursor.execute("""

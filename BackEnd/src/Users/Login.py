@@ -41,7 +41,6 @@ def lambda_handler(event, context):
     try:
         "/api/users/username/{username}/password/{password}"
         path_parameters = event.get("pathParameters",{})
-        user_id = path_parameters.get("user_id")
         body=json.loads(event.get("body","{}"))
         username=body.get("username")
         password=body.get("password")
@@ -64,7 +63,9 @@ def lambda_handler(event, context):
         encyptionKey = search_results[0][4]
         ecryptedPass = search_results[0][3]
         decrypted_password = decrypt_password(ecryptedPass, encyptionKey)
-
+        print(f"Decrypted Password: {decrypted_password}")
+        print(f"Inputted Password: {password}")
+        
         if decrypted_password != password:
             return response(404, {"error": "Incorrect password"})
         # Here you would implement your password verification logic

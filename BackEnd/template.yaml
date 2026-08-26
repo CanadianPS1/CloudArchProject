@@ -13,7 +13,37 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Lambda functions
-      VpcId: vpc-0097d5ecedf0fc0c5
+      VpcId: vpc-07490d29cedde3872
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Postgres RDS
+      VpcId: vpc-07490d29cedde3872
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+
+  MyDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnets for Postgres
+      SubnetIds:
+        - subnet-024b20c484292353b
+        - subnet-09aa82884bd18c7bb
+        - subnet-0470a748e5174906c
+
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        SecretStringTemplate: '{"username":"db_user"}'
+        GenerateStringKey: password
+        PasswordLength: 32
+        ExcludeCharacters: '"@/\\'
+
   MyPostgresDB:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -22,7 +52,10 @@ Resources:
       AllocatedStorage: '20'
       DBName: my_database
       MasterUsername: db_user
-      MasterUserPassword: my_secure_password
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
 
   # DynamoDB
   ChannelsTable:
@@ -73,9 +106,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -84,7 +117,7 @@ Resources:
           DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
       Events:
         GetAllUsers:
           Type: Api
@@ -102,9 +135,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -113,7 +146,7 @@ Resources:
           DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
       Events:
         SignUpUser:
           Type: Api
@@ -130,9 +163,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -141,7 +174,7 @@ Resources:
           DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
       Events:
         UpdateUser:
           Type: Api
@@ -158,9 +191,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -169,7 +202,7 @@ Resources:
           DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
       Events:
         DeleteUser:
           Type: Api
@@ -186,9 +219,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-000bbe0ea15d9fbcb
-          - subnet-0ff2a9217a5a24230
-          - subnet-013ab40ccdb082226
+          - subnet-024b20c484292353b
+          - subnet-09aa82884bd18c7bb
+          - subnet-0470a748e5174906c
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -197,7 +230,7 @@ Resources:
           DB_PORT: !GetAtt MyPostgresDB.Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
       Events:
         Login:
           Type: Api
