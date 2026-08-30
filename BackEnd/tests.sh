@@ -1,10 +1,10 @@
 #!/bin/bash
-aws lambda invoke --function-name SignUpUsers --payload fileb://events/SignUpUser.json response.json && cat response.json && \
+aws lambda invoke --function-name SignUpUser --payload fileb://events/SignUpUser.json response.json && cat response.json && \
 aws lambda invoke --function-name Login --payload fileb://events/Login.json response.json && cat response.json && \
 aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
-aws lambda invoke --function-name UpdateUsers --payload fileb://events/UpdateUser.json response.json && cat response.json && \
+aws lambda invoke --function-name UpdateUser --payload fileb://events/UpdateUser.json response.json && cat response.json && \
 aws lambda invoke --function-name GetAllUsers --payload fileb://events/GetAllUsers.json response.json && cat response.json && \
-aws lambda invoke --function-name DeleteUsers --payload fileb://events/DeleteUser.json response.json && cat response.json && \
+aws lambda invoke --function-name DeleteUser --payload fileb://events/DeleteUser.json response.json && cat response.json && \
 aws lambda invoke --function-name CreateChannel --payload fileb://events/CreateChannel.json response.json && cat response.json && \
 aws lambda invoke --function-name UpdateChannelName --payload fileb://events/UpdateChannelName.json response.json && cat response.json && \
 aws lambda invoke --function-name GetChannelsByUser --payload fileb://events/GetChannelsByUser.json response.json && cat response.json && \

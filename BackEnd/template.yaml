@@ -13,13 +13,13 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Lambda functions
-      VpcId: vpc-07490d29cedde3872
+      VpcId: vpc-0097d5ecedf0fc0c5
 
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Postgres RDS
-      VpcId: vpc-07490d29cedde3872
+      VpcId: vpc-0097d5ecedf0fc0c5
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 5432
@@ -31,9 +31,9 @@ Resources:
     Properties:
       DBSubnetGroupDescription: Subnets for Postgres
       SubnetIds:
-        - subnet-024b20c484292353b
-        - subnet-09aa82884bd18c7bb
-        - subnet-0470a748e5174906c
+        - subnet-013ab40ccdb082226
+        - subnet-0ff2a9217a5a24230
+        - subnet-000bbe0ea15d9fbcb
 
   DatabaseSecret:
     Type: AWS::SecretsManager::Secret
@@ -106,9 +106,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-024b20c484292353b
-          - subnet-09aa82884bd18c7bb
-          - subnet-0470a748e5174906c
+          - subnet-013ab40ccdb082226
+          - subnet-0ff2a9217a5a24230
+          - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -135,9 +135,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-024b20c484292353b
-          - subnet-09aa82884bd18c7bb
-          - subnet-0470a748e5174906c
+          - subnet-013ab40ccdb082226
+          - subnet-0ff2a9217a5a24230
+          - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -163,9 +163,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-024b20c484292353b
-          - subnet-09aa82884bd18c7bb
-          - subnet-0470a748e5174906c
+          - subnet-013ab40ccdb082226
+          - subnet-0ff2a9217a5a24230
+          - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -191,9 +191,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-024b20c484292353b
-          - subnet-09aa82884bd18c7bb
-          - subnet-0470a748e5174906c
+          - subnet-013ab40ccdb082226
+          - subnet-0ff2a9217a5a24230
+          - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -219,9 +219,9 @@ Resources:
         SecurityGroupIds:
           - !Ref LambdaSecurityGroup
         SubnetIds:
-          - subnet-024b20c484292353b
-          - subnet-09aa82884bd18c7bb
-          - subnet-0470a748e5174906c
+          - subnet-013ab40ccdb082226
+          - subnet-0ff2a9217a5a24230
+          - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
       Environment:
@@ -243,7 +243,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: CreateChannel
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: CreateChannel.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -258,7 +258,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: GetAllChannels
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: GetAllChannels.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -273,7 +273,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: GetChannelById
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: GetChannelById.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -288,7 +288,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: GetChannelsByUser
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: GetChannelsByUser.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -303,7 +303,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: UpdateChannelName
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: UpdateChannelName.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -318,7 +318,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: RemoveUserFromChannel
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: RemoveUserFromChannel.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -333,7 +333,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: AddUserToChannel
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: AddUserToChannel.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
@@ -348,7 +348,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: DeleteChannel
-      CodeUri: src/Messages/
+      CodeUri: src/Channels/
       Handler: DeleteChannel.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:

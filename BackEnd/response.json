@@ -1,1 +1,1 @@
-{"statusCode": 500, "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}, "body": "{\"error\": \"relation \\\"users\\\" does not exist\\nLINE 1: DELETE FROM users WHERE user_id = '12345678-1234-1234-1234-1...\\n                    ^\\n\"}"}
+{"statusCode": 200, "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}, "body": "{\"Message\": \"Channel deleted\"}"}

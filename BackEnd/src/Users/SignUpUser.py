@@ -70,17 +70,6 @@ def lambda_handler(event, context):
         if not username or not email or not password:
             return response(400,{"error":"Missing required fields"})
 
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT * FROM users WHERE username  =  %s",
-            (username,)
-        )
-        search_results = cursor.fetchall()
-        if search_results:
-            return response(404, {"error": "Username is already in use please pick another."})
-        
-        user_id = str(uuid4())
-        created_at = datetime.now(timezone.utc)
         connection = psycopg2.connect(
             host = os.environ["DB_HOST"],
             #The error is originating from the port
@@ -91,6 +80,7 @@ def lambda_handler(event, context):
         )
 
         cursor = connection.cursor()
+
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users(
                 user_id VARCHAR(36) PRIMARY KEY,
@@ -103,6 +93,18 @@ def lambda_handler(event, context):
                 created_at TIMESTAMP NOT NULL
             )
         """)
+
+        cursor.execute(
+            "SELECT * FROM users WHERE username  =  %s",
+            (username,)
+        )
+        search_results = cursor.fetchall()
+        if search_results:
+            return response(404, {"error": "Username is already in use please pick another."})
+        
+        user_id = str(uuid4())
+        created_at = datetime.now(timezone.utc)
+
         cursor.execute("""
             INSERT INTO users(
                 user_id,
