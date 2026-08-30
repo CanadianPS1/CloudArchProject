@@ -1,6 +1,8 @@
 import json
 import boto3
+import os
 import logging
+sqs = boto3.client("sqs")
 def response(code, body):
     return {
         "statusCode" : code,
@@ -16,6 +18,13 @@ def lambda_handler(event, context):
         dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table("Channels")
         table.delete_item(Key={"Id" : channel_id})
+        sqs.send_message(
+            QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
+            MessageBody=json.dumps({
+                "message":"Channel Deleted",
+                "channel_id":channel_id
+            })
+        )
         return response(200,{"Message" : "Channel deleted"})
     except Exception as e:
         logging.error(f"Error Updating Name : {str(e)}")

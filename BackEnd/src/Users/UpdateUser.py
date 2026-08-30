@@ -2,8 +2,10 @@ import json
 import logging
 import os
 import psycopg2
+import boto3
 from datetime import datetime,timezone
 from uuid import uuid4
+sqs = boto3.client("sqs")
 def response(code,body):
     return {
         "statusCode":code,
@@ -48,6 +50,13 @@ def lambda_handler(event,context):
         connection.commit()
         cursor.close()
         connection.close()
+        sqs.send_message(
+            QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
+            MessageBody=json.dumps({
+                "message":"User Updated",
+                "user_id":user_id
+            })
+        )
         return response(200,{"message":"User updated successfully"})
     except Exception as e:
         logging.error(f"Error updating user: {str(e)}")

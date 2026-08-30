@@ -111,6 +111,8 @@ Resources:
           - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Environment:
         Variables:
           DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
@@ -118,6 +120,7 @@ Resources:
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
       Events:
         GetAllUsers:
           Type: Api
@@ -140,6 +143,8 @@ Resources:
           - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Environment:
         Variables:
           DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
@@ -147,6 +152,7 @@ Resources:
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
       Events:
         SignUpUser:
           Type: Api
@@ -168,6 +174,8 @@ Resources:
           - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Environment:
         Variables:
           DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
@@ -175,6 +183,7 @@ Resources:
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
       Events:
         UpdateUser:
           Type: Api
@@ -196,6 +205,8 @@ Resources:
           - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Environment:
         Variables:
           DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
@@ -203,6 +214,7 @@ Resources:
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
       Events:
         DeleteUser:
           Type: Api
@@ -224,6 +236,8 @@ Resources:
           - subnet-000bbe0ea15d9fbcb
       Policies:
         - AWSLambdaBasicExecutionRole
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Environment:
         Variables:
           DB_HOST: !GetAtt MyPostgresDB.Endpoint.Address
@@ -231,6 +245,7 @@ Resources:
           DB_NAME: my_database
           DB_USER: db_user
           DB_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecret}:SecretString:password}}'
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
       Events:
         Login:
           Type: Api
@@ -248,12 +263,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel
             Method: POST
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   GetAllChannels:
     Type: AWS::Serverless::Function
     Properties:
@@ -263,12 +283,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel
             Method: GET
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   GetChannelById:
     Type: AWS::Serverless::Function
     Properties:
@@ -278,12 +303,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel/{channel_id}
             Method: GET
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   GetChannelsByUser:
     Type: AWS::Serverless::Function
     Properties:
@@ -293,12 +323,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel/user/{userId}
             Method: GET
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   UpdateChannelName:
     Type: AWS::Serverless::Function
     Properties:
@@ -308,12 +343,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel/{channel_id}
             Method: PUT
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   RemoveUserFromChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -323,12 +363,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel/user/remove/{user_id}
             Method: PUT
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   AddUserToChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -338,12 +383,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel/user/add/{user_id}
             Method: PUT
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   DeleteChannel:
     Type: AWS::Serverless::Function
     Properties:
@@ -353,12 +403,17 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: Channels
+        - SQSSendMessagePolicy:
+            QueueName: notifications
       Events:
         CreateChannel:
           Type: Api
           Properties:
             Path: /api/channel/{channel_id}
             Method: DELETE
+      Environment:
+        Variables:
+          NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
   # SendMessage:
   #   Type: AWS::Serverless::Function
   #   Properties:

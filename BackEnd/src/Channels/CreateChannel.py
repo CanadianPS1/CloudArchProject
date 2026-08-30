@@ -1,6 +1,7 @@
 import json
 import boto3
 import logging
+import os
 from datetime import datetime,timezone
 from uuid import uuid4
 def response(code, body):

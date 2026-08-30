@@ -10,6 +10,7 @@ import cryptography
 from decimal import Decimal
 from os import getenv
 import AuthTool
+sqs = boto3.client("sqs")
 def response(code, body):
     return {
         "statusCode":code,
@@ -71,6 +72,13 @@ def lambda_handler(event, context):
         # Here you would implement your password verification logic
         cursor.close()
         connection.close()
+        sqs.send_message(
+            QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
+            MessageBody=json.dumps({
+                "message":"User Logged in",
+                "user_id":user_id
+            })
+        )
         return response(200,{"message":"Login successful","user_id":search_results[0][0]})
     except Exception as e:
         logging.error(f"Error updating user: {str(e)}")

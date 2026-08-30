@@ -10,7 +10,7 @@ import cryptography
 from decimal import Decimal
 from os import getenv
 import AuthTool
-
+sqs = boto3.client("sqs")
 def response(code, body):
     return {
         "statusCode" : code,
@@ -128,11 +128,24 @@ def lambda_handler(event, context):
         connection.commit()
         cursor.close()
         connection.close()
-        
+        sqs.send_message(
+            QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
+            MessageBody=json.dumps({
+                "message":"User created",
+                "user_id":user_id
+            })
+        )
         return response(201,{
             "message" : "User created successfully",
             "user_id" : user_id
         })
     except Exception as e:
+        sqs = boto3.client("sqs")
+        sqs.send_message(
+            QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
+            MessageBody=json.dumps({
+                "message":"failed to create user"
+            })
+        )
         logging.error(f"Error creating user : {str(e)}")
         return response(500,{"error" : str(e)})

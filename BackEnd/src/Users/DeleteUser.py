@@ -2,6 +2,8 @@ import json
 import logging
 import os
 import psycopg2
+import boto3
+sqs = boto3.client("sqs")
 def response(code,body):
     return {
         "statusCode":code,
@@ -29,6 +31,13 @@ def lambda_handler(event,context):
         connection.commit()
         cursor.close()
         connection.close()
+        sqs.send_message(
+            QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
+            MessageBody=json.dumps({
+                "message":"User Deleted",
+                "user_id":user_id
+            })
+        )
         return response(200,{"message":"User deleted successfully"})
     except Exception as e:
         logging.error(f"Error deleting user: {str(e)}")
