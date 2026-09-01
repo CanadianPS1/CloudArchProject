@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:cordis/models/user_profile.dart';
+import 'package:cordis/services/api_service.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -14,17 +15,35 @@ class _SignupPageState extends State<SignupPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _apiService = ApiService.instance;
+  bool _isSubmitting = false;
 
   Future<void> _handleSignup() async {
-    if (_formKey.currentState!.validate()) {
-      // Execute registration logic or API call here
+    if (!_formKey.currentState!.validate() || _isSubmitting) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final result = await _apiService.createUser(
+        username: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) {
+        return;
+      }
 
       userProfileNotifier.value = userProfileNotifier.value.copyWith(
         displayName: _nameController.text.trim(),
         handle: _buildHandle(),
       );
 
-      _showTopSuccessMessage('User created successfully!');
+      _showTopSuccessMessage(result.message);
       await Future<void>.delayed(const Duration(seconds: 1));
 
       if (!mounted) {
@@ -32,6 +51,18 @@ class _SignupPageState extends State<SignupPage> {
       }
 
       Navigator.pushReplacementNamed(context, '/home');
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      _showSignupError(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -114,6 +145,15 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
+  void _showSignupError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -179,8 +219,13 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _handleSignup,
-                child: const Text('Create Account'),
+                onPressed: _isSubmitting ? null : _handleSignup,
+                child: _isSubmitting
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Create Account'),
               ),
               TextButton(
                 onPressed: () {

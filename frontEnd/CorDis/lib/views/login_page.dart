@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:cordis/models/user_profile.dart';
+import 'package:cordis/services/api_service.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -11,14 +14,131 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _apiService = ApiService.instance;
+  bool _isSubmitting = false;
 
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      // Execute login logic or API call here
-      
-      // Navigate to home and clear navigation stack
-      Navigator.pushReplacementNamed(context, '/home');
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate() || _isSubmitting) {
+      return;
     }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final result = await _apiService.loginUser(
+        emailOrUsername: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      userProfileNotifier.value = UserProfile(
+        displayName: _displayNameFor(result.user),
+        handle: _handleFor(result.user),
+        bio: _profileText(result.user.bio, 'No bio yet.'),
+        status: _formatStatus(result.user.status),
+        memberSince: _memberSince(result.user.createdAt),
+        interests: const [],
+      );
+
+      Navigator.pushReplacementNamed(context, '/home');
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      _showLoginError(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  String _displayNameFor(BackendUser user) {
+    final username = user.username.trim();
+
+    if (username.isNotEmpty) {
+      return username;
+    }
+
+    final emailName = user.email.trim().split('@').first;
+
+    if (emailName.isNotEmpty) {
+      return emailName;
+    }
+
+    return 'User';
+  }
+
+  String _handleFor(BackendUser user) {
+    final rawHandle = user.username.trim().isNotEmpty
+        ? user.username
+        : user.email.trim().split('@').first;
+    final cleanHandle = rawHandle
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9_]+'), '')
+        .trim();
+
+    if (cleanHandle.isEmpty) {
+      return '@user';
+    }
+
+    return '@$cleanHandle';
+  }
+
+  String _profileText(String? value, String fallback) {
+    final trimmedValue = value?.trim() ?? '';
+
+    if (trimmedValue.isEmpty) {
+      return fallback;
+    }
+
+    return trimmedValue;
+  }
+
+  String _formatStatus(String status) {
+    final trimmedStatus = status.trim();
+
+    if (trimmedStatus.isEmpty) {
+      return 'Active';
+    }
+
+    return '${trimmedStatus.substring(0, 1).toUpperCase()}'
+        '${trimmedStatus.substring(1)}';
+  }
+
+  String _memberSince(String? createdAt) {
+    final rawDate = createdAt?.trim() ?? '';
+
+    if (rawDate.isEmpty) {
+      return 'Now';
+    }
+
+    final normalizedDate = rawDate.replaceFirst(' ', 'T');
+    final parsedDate = DateTime.tryParse(normalizedDate);
+
+    if (parsedDate != null) {
+      return parsedDate.year.toString();
+    }
+
+    final yearMatch = RegExp(r'^\d{4}').firstMatch(rawDate);
+    return yearMatch?.group(0) ?? 'Now';
+  }
+
+  void _showLoginError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
 
   @override
@@ -42,14 +162,14 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               TextFormField(
                 controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.text,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Email or username',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return 'Please enter your email or username';
                   }
                   return null;
                 },
@@ -71,8 +191,13 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _handleLogin,
-                child: const Text('Log In'),
+                onPressed: _isSubmitting ? null : _handleLogin,
+                child: _isSubmitting
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Log In'),
               ),
               TextButton(
                 onPressed: () {
