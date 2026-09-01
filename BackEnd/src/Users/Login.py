@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         search_results = cursor.fetchall()
         if not search_results:
             return response(404, {"error": "User not found"})
-
+        
         encyptionKey = search_results[0][4]
         ecryptedPass = search_results[0][3]
         decrypted_password = decrypt_password(ecryptedPass, encyptionKey)
@@ -69,16 +69,16 @@ def lambda_handler(event, context):
         
         if decrypted_password != password:
             return response(404, {"error": "Incorrect password"})
-        # Here you would implement your password verification logic
-        cursor.close()
-        connection.close()
+
         sqs.send_message(
             QueueUrl=os.environ["NOTIFICATION_QUEUE_URL"],
             MessageBody=json.dumps({
                 "message":"User Logged in",
-                "user_id":user_id
+                "user_id":search_results[0][1]
             })
         )
+        cursor.close()
+        connection.close()
         return response(200,{"message":"Login successful","user_id":search_results[0][0]})
     except Exception as e:
         logging.error(f"Error updating user: {str(e)}")

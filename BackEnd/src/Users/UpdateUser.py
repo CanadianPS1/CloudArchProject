@@ -3,6 +3,9 @@ import logging
 import os
 import psycopg2
 import boto3
+import base64
+import AuthTool
+
 from datetime import datetime,timezone
 from uuid import uuid4
 sqs = boto3.client("sqs")
@@ -15,6 +18,24 @@ def response(code,body):
         },
         "body":json.dumps(body)
     }
+
+def password_encryption(password, encryption_key):
+    # Placeholder for password encryption logic
+    # You can implement your own encryption method here
+    try:
+        password_bytes = password.encode('utf-8')
+        password_base64 = base64.b64encode(password_bytes)
+        print(f"test print: {password_base64}")
+        print("Password test" + password)
+
+        key_bytes = encryption_key.encode('utf-8')
+        key_base64 = base64.b64encode(key_bytes)
+        encrypted_password = AuthTool.XorCipher(password_base64, key_base64)
+        pass
+    except Exception as e:
+        logging.error(f"Error encrypting password: {str(e)}")
+    return encrypted_password
+
 def lambda_handler(event,context):
     try:
         path_parameters = event.get("pathParameters",{})
@@ -23,6 +44,10 @@ def lambda_handler(event,context):
         username = body.get("username")
         email = body.get("email")
         password = body.get("password")
+
+        encryption_key = AuthTool.KeyGenerator(32)  # Generate a random encryption key
+        encrypted_password = password_encryption(str(password), encryption_key)
+        
         sql = """
             UPDATE users
             SET
@@ -32,7 +57,7 @@ def lambda_handler(event,context):
         elif email:
             sql += f" email  =  '{email}'"
         elif password:
-            sql += f" encryptedPass  =  '{password}'"
+            sql += f" encryptedPass  =  '{encrypted_password}'"
         else:
             return response(400,{"error":"Missing required fields"})
         sql += f"""
