@@ -414,86 +414,95 @@ Resources:
       Environment:
         Variables:
           NOTIFICATION_QUEUE_URL: !Ref NotificationQueue
-  # SendMessage:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: SendMessage
-  #     CodeUri: src/Messages/
-  #     Handler: CreateMessages.lambda_handler
-  #     Policies:
-  #       - AWSLambdaBasicExecutionRole
-  #     Environment:
-  #       Variables:
-  #         QUEUE_URL: !Ref NotificationQueue
-  #     Events:
-  #       SendMessage:
-  #         Type: Api
-  #         Properties:
-  #           Path: /api/messages
-  #           Method: POST
-  #   GetMessages:
-  #     Type: AWS::Serverless::Function
-  #     Properties:
-  #       FunctionName: GetMessages
-  #       CodeUri: src/Messages/
-  #       Handler: GetAllMessages.lambda_handler
-  #       Policies:
-  #         - AWSLambdaBasicExecutionRole
-  #       Environment:
-  #         Variables:
-  #           QUEUE_URL: !Ref NotificationQueue
-  #       Events:
-  #         GetMessages:
-  #           Type: Api
-  #           Properties:
-  #             Path: /api/messages
-  #             Method: GET
-  #   UpdateMessages:
-  #     Type: AWS::Serverless::Function
-  #     Properties:
-  #       FunctionName: UpdateMessages
-  #       CodeUri: src/Messages/
-  #       Handler: UpdateMessages.lambda_handler
-  #       Policies:
-  #         - AWSLambdaBasicExecutionRole
-  #       Environment:
-  #         Variables:
-  #           QUEUE_URL: !Ref NotificationQueue
-  #       Events:
-  #         UpdateMessages:
-  #           Type: Api
-  #           Properties:
-  #             Path: /api/messages
-  #             Method: UPDATE
-  #   DeleteMessages:
-  #     Type: AWS::Serverless::Function
-  #     Properties:
-  #       FunctionName: DeleteMessages
-  #       CodeUri: src/Messages/
-  #       Handler: DeleteMessages.lambda_handler
-  #       Policies:
-  #         - AWSLambdaBasicExecutionRole
-  #       Environment:
-  #         Variables:
-  #           QUEUE_URL: !Ref NotificationQueue
-  #       Events:
-  #         DeleteMessages:
-  #           Type: Api
-  #           Properties:
-  #             Path: /api/messages
-  #             Method: DELETE
-  # NotifyDirectorFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: mod05-notify-director-consumer
-  #     CodeUri: ex5-2/notify_director/
-  #     Handler: app.lambda_handler
-  #     Events:
-  #       NotificationQueueEvent:
-  #         Type: SQS
-  #         Properties:
-  #           Queue: !GetAtt NotificationQueue.Arn
-  #           BatchSize: 10
+  SendMessage:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SendMessage
+      CodeUri: src/Messages/
+      Handler: CreateMessages.lambda_handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBReadPolicy: #read access
+            TableName: !Ref ChannelsTable
+        - DynamoDBCrudPolicy: #full access
+            TableName: !Ref MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref NotificationQueue
+          CHANNEL_TABLE_NAME: !Ref ChannelsTable
+          MESSAGE_TABLE_NAME: !Ref MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/post
+            Method: POST
+ 
+  GetMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetMessages
+      CodeUri: src/Messages/
+      Handler: GetMessagesByBatch.lambda_handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBReadPolicy: #read access
+            TableName: !Ref ChannelsTable
+        - DynamoDBCrudPolicy: #full access
+            TableName: !Ref MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref NotificationQueue
+          CHANNEL_TABLE_NAME: !Ref ChannelsTable
+          MESSAGE_TABLE_NAME: !Ref MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/get/{channel_id}/{message_batch_number}
+            Method: GET
+ 
+  UpdateMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateMessages
+      CodeUri: src/Messages/
+      Handler: UpdateMessages.lambda_handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy: #full access
+            TableName: !Ref MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref NotificationQueue
+          MESSAGE_TABLE_NAME: !Ref MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/put
+            Method: PUT
+           
+  DeleteMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteMessages
+      CodeUri: src/Messages/
+      Handler: DeleteMessages.lambda_handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy: #full access
+            TableName: !Ref MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref NotificationQueue
+          MESSAGE_TABLE_NAME: !Ref MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/delete/{channel_id}/{sort_key}
+            Method: DELETE
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint
