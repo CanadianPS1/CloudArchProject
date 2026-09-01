@@ -1,8 +1,13 @@
 import json
 import boto3
+from botocore.exceptions import ClientError
 from os import getenv
 
-table = boto3.resource('dynamodb').Table(getenv('TABLE_NAME', 'Channels'))
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+messageTable = boto3.resource('dynamodb').Table(getenv('MESSAGE_TABLE_NAME', 'Messages'))
 def response(code,body):
     return {
         "statusCode" : code,
@@ -18,47 +23,47 @@ def get_body(event):
     return {} if body is None else json.loads(body)
 
 def lambda_handler(event, context):
-    #get path params
-    path_params = event.get("pathParameters") or {}
-    channel_id  = path_params.get("channelID", "")
-    message_id  = path_params.get("messageID", "")
+    try:
+        logger.info("Starting Update Message Request")
+        #ok, get message info
+        body = get_body(event)
+        newMessage  = body.get("message", "")
+        channel_id  = body.get("channel_id", "")
+        sort_key = body.get("sort_key","")
 
-    #required fields
-    if channel_id == "" or message_id == "":
-        return response(400, {"message" : "channelId and messageID are both required items"})
+        #required fields
+        if newMessage == "" or channel_id == "" or sort_key == "":
+            return response(400, {"message" : "messageID, channelID, sortKey and NewMessage are required items"})
+        logger.info("Input Validated, starting update protocol")
 
-    # make sure channel exists
-    existing = table.get_item(Key={"Id": channel_id})
-    if "Item" not in existing:
-        return response(404, {"message": f"Channel '{channel_id}' not found"})
+        try:
+        #update message
+            updateResponse = messageTable.update_item(
+                        Key={
+                            'ChannelID': channel_id,  # Your table's primary key
+                            'SortKey' : sort_key
+                        },
+                        UpdateExpression=f"SET message = :new_vals",
+                        ExpressionAttributeValues={
+                            ":new_vals": newMessage
+                        },
+                        ReturnValues="UPDATED_NEW"
+                    )
 
-    #ok, get message info
-    body = get_body(event)
-    newMessage  = body.get("message", "")
+            logger.info("Update Complete")
+            return response(200, {"message": "Message updated", "response Attributes":updateResponse['Attributes']})
+        
+        except ClientError as e:
+            # Extract the error code from the response metadata
+            error_code = e.response['Error']['Code']
+            
+            if error_code == 'ConditionalCheckFailedException':
+                return response(404, {"message": f"Message '{message_id}' not found"})
+            else:
+                # Handle other potential DynamoDB errors (e.g., ProvisionedThroughputExceededException)
+                logger.error(e.response)
+                return response(404, {"message": "An unexpected error has occured"})
 
-    #make sure message exists, and where index is
-    messageIndex = -1
-    findValue = False
-    
-    holdChannel = existing.get["Item"]
-    for message in holdChannel.messages:
-        messageIndex += 1
-        if message.ID == message_id:
-            findValue = True
-            break
-
-    if not findValue:
-        return response(404, {"message": f"Message '{message_id}' not found"})
-
-    #update channel, going into the list index and modifying its message
-    response = table.update_item(
-                Key={
-                    'ID': channel_id  # Your table's primary key
-                },
-                UpdateExpression=f"SET messages[{messageIndex}].message = :new_vals)",
-                ExpressionAttributeValues={
-                    ":new_vals": newMessage  # The list of values to append
-                },
-                ReturnValues="UPDATED_NEW"
-            )
-    return response(200, {"message": "Message deleted", "Id": message_id, "response Attributes":response['Attributes']})
+    except Exception as e:
+            logging.error(f"Error updating message: {str(e)}")
+            return response(500, {"error": str(e)})

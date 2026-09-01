@@ -1,6 +1,8 @@
 import json
 import os
 import psycopg2
+from os import getenv
+
 def response(status_code,body):
     return {
         "statusCode":status_code,
@@ -13,12 +15,14 @@ def response(status_code,body):
 def lambda_handler(event,context):
     try:
         connection = psycopg2.connect(
-            host = os.environ["DB_HOST"],
-            port = os.environ.get("DB_PORT","5432"),
-            database = os.environ["DB_NAME"],
-            user = os.environ["DB_USER"],
-            password = os.environ["DB_PASSWORD"]
-        )
+                    host = os.environ["DB_HOST"],
+                    port = int(os.environ.get("DB_PORT","5432")),
+                    database = os.environ.get("DB_NAME","my_database"),
+                    user = getenv("DB_USER"), #secret_dict["username"],         # From Secrets Manager
+                    password = getenv("DB_PASSWORD"),#secret_dict["password"], 
+                    sslmode = "require"
+                )
+        
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM users")
         records = cursor.fetchall()

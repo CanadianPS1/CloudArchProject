@@ -7,31 +7,73 @@ Globals:
     Timeout: 10
   Api:
     EndpointConfiguration: REGIONAL
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+    - dev
+    - staging
+    - prod
+    Description: Environment stage for naming resources
 Resources:
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Lambda functions
-      VpcId: vpc-07490d29cedde3872
+      VpcId:
+        Ref: MyVPC
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Postgres RDS
-      VpcId: vpc-07490d29cedde3872
+      VpcId:
+        Ref: MyVPC
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 5432
         ToPort: 5432
         SourceSecurityGroupId:
           Ref: LambdaSecurityGroup
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${Stage}-rds-subnet-a
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${Stage}-rds-subnet-b
   MyDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: Subnets for Postgres
       SubnetIds:
-      - subnet-024b20c484292353b
-      - subnet-09aa82884bd18c7bb
-      - subnet-0470a748e5174906c
+      - Ref: SubnetA
+      - Ref: SubnetB
   DatabaseSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -61,6 +103,21 @@ Resources:
       PrimaryKey:
         Name: Id
         Type: String
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Messages
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: ChannelID
+        AttributeType: S
+      - AttributeName: SortKey
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ChannelID
+        KeyType: HASH
+      - AttributeName: SortKey
+        KeyType: RANGE
   NotificationQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -75,9 +132,8 @@ Resources:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup
         SubnetIds:
-        - subnet-024b20c484292353b
-        - subnet-09aa82884bd18c7bb
-        - subnet-0470a748e5174906c
+        - Ref: SubnetA
+        - Ref: SubnetB
       Policies:
       - AWSLambdaBasicExecutionRole
       Environment:
@@ -92,7 +148,8 @@ Resources:
             - Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD:
+            Fn::Sub: '{{resolve:secretsmanager:${DatabaseSecret}::password}}'
       Events:
         GetAllUsers:
           Type: Api
@@ -112,11 +169,13 @@ Resources:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup
         SubnetIds:
-        - subnet-024b20c484292353b
-        - subnet-09aa82884bd18c7bb
-        - subnet-0470a748e5174906c
+        - Ref: SubnetA
+        - Ref: SubnetB
       Policies:
       - AWSLambdaBasicExecutionRole
+      - AWSSecretsManagerGetSecretValuePolicy:
+          SecretArn:
+            Ref: DatabaseSecret
       Environment:
         Variables:
           DB_HOST:
@@ -126,7 +185,8 @@ Resources:
           DB_PORT: 5432
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD:
+            Fn::Sub: '{{resolve:secretsmanager:${DatabaseSecret}::password}}'
       Events:
         SignUpUser:
           Type: Api
@@ -145,9 +205,8 @@ Resources:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup
         SubnetIds:
-        - subnet-024b20c484292353b
-        - subnet-09aa82884bd18c7bb
-        - subnet-0470a748e5174906c
+        - Ref: SubnetA
+        - Ref: SubnetB
       Policies:
       - AWSLambdaBasicExecutionRole
       Environment:
@@ -162,12 +221,13 @@ Resources:
             - Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD:
+            Fn::Sub: '{{resolve:secretsmanager:${DatabaseSecret}::password}}'
       Events:
         UpdateUsers:
           Type: Api
           Properties:
-            Path: /api/users
+            Path: /api/users/{user_id}
             Method: PUT
     Metadata:
       SamResourceId: UpdateUsers
@@ -181,9 +241,8 @@ Resources:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup
         SubnetIds:
-        - subnet-024b20c484292353b
-        - subnet-09aa82884bd18c7bb
-        - subnet-0470a748e5174906c
+        - Ref: SubnetA
+        - Ref: SubnetB
       Policies:
       - AWSLambdaBasicExecutionRole
       Environment:
@@ -198,7 +257,8 @@ Resources:
             - Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD:
+            Fn::Sub: '{{resolve:secretsmanager:${DatabaseSecret}::password}}'
       Events:
         DeleteUsers:
           Type: Api
@@ -217,9 +277,8 @@ Resources:
         SecurityGroupIds:
         - Ref: LambdaSecurityGroup
         SubnetIds:
-        - subnet-024b20c484292353b
-        - subnet-09aa82884bd18c7bb
-        - subnet-0470a748e5174906c
+        - Ref: SubnetA
+        - Ref: SubnetB
       Policies:
       - AWSLambdaBasicExecutionRole
       Environment:
@@ -234,7 +293,8 @@ Resources:
             - Endpoint.Port
           DB_NAME: my_database
           DB_USER: db_user
-          DB_PASSWORD: my_secure_password
+          DB_PASSWORD:
+            Fn::Sub: '{{resolve:secretsmanager:${DatabaseSecret}::password}}'
       Events:
         Login:
           Type: Api
@@ -307,7 +367,7 @@ Resources:
         CreateChannel:
           Type: Api
           Properties:
-            Path: /api/channel/user/{userId}
+            Path: /api/channel/user/{user_id}
             Method: GET
     Metadata:
       SamResourceId: GetChannelsByUser
@@ -379,6 +439,116 @@ Resources:
             Method: DELETE
     Metadata:
       SamResourceId: DeleteChannel
+  SendMessage:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SendMessage
+      CodeUri: SendMessage
+      Handler: CreateMessages.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: ChannelsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL:
+            Ref: NotificationQueue
+          CHANNEL_TABLE_NAME:
+            Ref: ChannelsTable
+          MESSAGE_TABLE_NAME:
+            Ref: MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/post
+            Method: POST
+    Metadata:
+      SamResourceId: SendMessage
+  GetMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetMessages
+      CodeUri: GetMessages
+      Handler: GetMessagesByBatch.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: ChannelsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL:
+            Ref: NotificationQueue
+          CHANNEL_TABLE_NAME:
+            Ref: ChannelsTable
+          MESSAGE_TABLE_NAME:
+            Ref: MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/get/{channel_id}/{message_batch_number}
+            Method: GET
+    Metadata:
+      SamResourceId: GetMessages
+  UpdateMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UpdateMessages
+      CodeUri: UpdateMessages
+      Handler: UpdateMessages.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL:
+            Ref: NotificationQueue
+          MESSAGE_TABLE_NAME:
+            Ref: MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/put
+            Method: PUT
+    Metadata:
+      SamResourceId: UpdateMessages
+  DeleteMessages:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteMessages
+      CodeUri: DeleteMessages
+      Handler: DeleteMessages.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: MessagesTable
+      Environment:
+        Variables:
+          QUEUE_URL:
+            Ref: NotificationQueue
+          MESSAGE_TABLE_NAME:
+            Ref: MessagesTable
+      Events:
+        SendMessage:
+          Type: Api
+          Properties:
+            Path: /api/messages/delete/{channel_id}/{sort_key}
+            Method: DELETE
+    Metadata:
+      SamResourceId: DeleteMessages
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint

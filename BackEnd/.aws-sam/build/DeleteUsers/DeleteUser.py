@@ -2,6 +2,8 @@ import json
 import logging
 import os
 import psycopg2
+from os import getenv
+
 def response(code,body):
     return {
         "statusCode":code,
@@ -18,12 +20,13 @@ def lambda_handler(event,context):
         if not user_id:
             return response(400,{"error":"Missing required field: user_id"})
         connection = psycopg2.connect(
-            host = os.environ["DB_HOST"],
-            port = os.environ.get("DB_PORT","5432"),
-            database = os.environ["DB_NAME"],
-            user = os.environ["DB_USER"],
-            password = os.environ["DB_PASSWORD"]
-        )
+                            host = os.environ["DB_HOST"],
+                            port = int(os.environ.get("DB_PORT","5432")),
+                            database = os.environ.get("DB_NAME","my_database"),
+                            user = getenv("DB_USER"), #secret_dict["username"],         # From Secrets Manager
+                            password = getenv("DB_PASSWORD"),#secret_dict["password"], 
+                            sslmode = "require"
+                        )
         cursor = connection.cursor()
         cursor.execute("DELETE FROM users WHERE user_id = %s",(user_id,))
         connection.commit()

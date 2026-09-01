@@ -11,6 +11,13 @@ from decimal import Decimal
 from os import getenv
 import AuthTool
 
+
+# client = boto3.client('secretsmanager', region_name=os.environ.get("AWS_REGION", "us-east-2"))
+    
+# # Retrieve the secret using the Secret ARN or Name passed via env vars
+# secret_response = client.get_secret_value(SecretId=os.environ["SECRET_ARN"])
+# secret_dict = json.loads(secret_response['SecretString'])
+
 def response(code, body):
     return {
         "statusCode" : code,
@@ -78,8 +85,9 @@ def lambda_handler(event, context):
             host = os.environ["DB_HOST"],
             port = int(os.environ.get("DB_PORT","5432")),
             database = os.environ.get("DB_NAME","my_database"),
-            user = os.environ["DB_USER"],
-            password = os.environ["DB_PASSWORD"]
+            user = getenv("DB_USER"), #secret_dict["username"],         # From Secrets Manager
+            password = getenv("DB_PASSWORD"),#secret_dict["password"], 
+            sslmode = "require"
         )
 
         print("Encryption Key: " + encryption_key)

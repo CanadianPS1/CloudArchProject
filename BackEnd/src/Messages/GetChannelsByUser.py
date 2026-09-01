@@ -1,6 +1,10 @@
 import json
 import boto3
 import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 def response(code, body):
     return {
         "statusCode" : code,
@@ -13,6 +17,7 @@ def response(code, body):
 def lambda_handler(event, context):
     try:
         user_id = event.get("pathParameters",{}).get("user_id")
+        logger.info(user_id)
         dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table("Channels")
         dbresponse = table.scan(

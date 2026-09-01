@@ -44,3 +44,90 @@ Dynamo:
       "timeStamp" : String
    ]
 }
+
+
+
+## Endpoint format
+# Users:
+
+GetAllUsers
+- GET
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/users
+
+SignUpUser
+- POST
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/users/create
+- Body : {"username" : "", "email" : "", "password" : ""}
+
+UpdateUser
+- PUT
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/users/{user_id}
+- Body : {*"username" : "", *"email" : "", *"password" : ""} - all are optional, but at least one needs to exist
+- NOTE (A little concerned about how the password is handled. the password option directly send in to the encrypted password. The encryption algorithm is not in the lambda)
+
+DeleteUser
+- DELETE
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/users/{user_id}
+
+Login
+- POST
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/users
+- Body : {"username" : "", "password" : ""}
+- NOTE (Couldn't get this function to work, looks like the issue is within the encryption/decryption algorithm)
+
+# Channels:
+GetAllChannels
+- GET
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel
+
+GetChannelByID
+- GET
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel/{channel_id}
+
+GetChannelsByUser
+- GET
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel/user/{user_id}
+
+DeleteChannel
+- DELETE
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel/{channel_id}
+
+CreateChannel
+- POST
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel
+- Body : { "name" : "", "admin" : "", "people" : [""]}
+
+UpdateChannel
+- PUT
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel/{channel_id}
+- Body : { "name" : ""}
+
+AddUserToChannel
+- PUT
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel/user/add/{user_id} 
+- Body : {"channel_id" : ""}
+
+RemoveUserFromChannel
+- PUT
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/channel/user/remove/{user_id}
+- Body : {"channel_id" : ""}
+
+# Messages
+GetMessagesByBatch
+- GET
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/messages/get/{channel_id}/{message_batch_number}
+
+DeleteMessage
+- DELETE
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/messages/delete/{channel_id}/{sort_key}
+- NOTE (the sort key being included in this function is for technical needs, the Dynamo format doesn't work without it)
+
+CreateMessage
+- POST
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/messages/post
+- Body : {"channel_id" : "", "user_id" : "", "message" : ""}
+
+UpdateMessage
+- PUT
+- https://1jgsq1z4h9.execute-api.us-east-2.amazonaws.com/Prod/api/messages/put
+- Body : {"message" : "", "channel_id" : "", "sort_key" : ""}
