@@ -65,6 +65,21 @@ Resources:
       PrimaryKey:
         Name: Id
         Type: String
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Messages
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: ChannelID
+        AttributeType: S
+      - AttributeName: SortKey
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ChannelID
+        KeyType: HASH
+      - AttributeName: SortKey
+        KeyType: RANGE
 
   # ── SQS Queue ────────────────────────────────────────────────────────
   NotificationQueue:

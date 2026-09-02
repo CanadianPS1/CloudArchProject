@@ -12,4 +12,5 @@ aws lambda invoke --function-name GetAllChannels --payload fileb://events/GetAll
 aws lambda invoke --function-name RemoveUserFromChannel --payload fileb://events/RemoveUserFromChannel.json response.json && cat response.json && \
 aws lambda invoke --function-name AddUserToChannel --payload fileb://events/AddUserToChannel.json response.json && cat response.json && \
 aws lambda invoke --function-name GetChannelById --payload fileb://events/GetChannelById.json response.json && cat response.json && \
+aws lambda invoke --function-name SendMessage --payload fileb://events/CreateMsg.json response.json && cat response.json && \
 aws lambda invoke --function-name DeleteChannel --payload fileb://events/DeleteChannel.json response.json && cat response.json

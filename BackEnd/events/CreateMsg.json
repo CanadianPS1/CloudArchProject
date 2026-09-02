@@ -1,14 +1,14 @@
 {
     "httpMethod": "POST",
-    "path": "/create_msg",
+    "path": "/api/messages/post",
     "headers": {
         "content-type": "application/json"
     },
     "queryStringParameters": null,
-    "body": "{\"channelID\": \"12\", \"channelName\": \"testChannel\", \"massages\": [\"messageID\": \"5287584\", \"userID\": \"453384834\", \"userName\": \"testUser\", \"message\": \"Hi this is a test message\", \"timeStamp\": \"10:12\"]}",
+    "body": "{\"channel_id\": \"2d50dca8-dc73-4c7c-920f-2e3285a3d94e\", \"user_id\": \"4d3b30c6-2c8a-4065-91dd-b284b750ccf4\", \"message\": \"This is a test message\" }",
     "pathParameters": null,
     "requestContext": {
-        "resourcePath": "/create_msg",
+        "resourcePath": "/api/messages/post",
         "httpMethod": "POST"
     }
 }
